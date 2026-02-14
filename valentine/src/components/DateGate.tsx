@@ -4,6 +4,7 @@ import {
   HER_BDAY,
   MY_BDAY,
   formatISODate,
+  inputToISODate,
   isSameISO,
   parseISODate,
   toISODate,
@@ -18,6 +19,8 @@ type ActiveField = 'mine' | 'yours'
 export default function DateGate({ onSuccess }: DateGateProps) {
   const [myDate, setMyDate] = useState('')
   const [herDate, setHerDate] = useState('')
+  const [myInput, setMyInput] = useState('')
+  const [herInput, setHerInput] = useState('')
   const [activeField, setActiveField] = useState<ActiveField>('mine')
   const [error, setError] = useState<string | null>(null)
   const [attempts, setAttempts] = useState(0)
@@ -38,13 +41,25 @@ export default function DateGate({ onSuccess }: DateGateProps) {
   const activeDate = activeField === 'mine' ? myDate : herDate
   const selectedDate = useMemo(() => parseISODate(activeDate), [activeDate])
 
+  const formatDateInput = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 8)
+    const month = digits.slice(0, 2)
+    const day = digits.slice(2, 4)
+    const year = digits.slice(4, 8)
+    if (digits.length <= 2) return month
+    if (digits.length <= 4) return `${month}/${day}`
+    return `${month}/${day}/${year}`
+  }
+
   const handleSelectDate = (date: Date) => {
     if (lockedOut) return
     const iso = toISODate(date)
     if (activeField === 'mine') {
       setMyDate(iso)
+      setMyInput(formatISODate(iso))
     } else {
       setHerDate(iso)
+      setHerInput(formatISODate(iso))
     }
     setError(null)
   }
@@ -84,15 +99,21 @@ export default function DateGate({ onSuccess }: DateGateProps) {
           </div>
           <input
             type="text"
-            value={formatISODate(myDate)}
+            value={myInput}
             placeholder="MM/DD/YYYY"
-            inputMode="none"
-            readOnly
+            inputMode="numeric"
             onFocus={() => {
               setActiveField('mine')
             }}
             onClick={() => {
               setActiveField('mine')
+            }}
+            onChange={(event) => {
+              const formatted = formatDateInput(event.target.value)
+              setMyInput(formatted)
+              if (!lockedOut) setError(null)
+              const iso = inputToISODate(formatted)
+              setMyDate(iso ?? '')
             }}
             disabled={lockedOut}
           />
@@ -104,15 +125,21 @@ export default function DateGate({ onSuccess }: DateGateProps) {
           </div>
           <input
             type="text"
-            value={formatISODate(herDate)}
+            value={herInput}
             placeholder="MM/DD/YYYY"
-            inputMode="none"
-            readOnly
+            inputMode="numeric"
             onFocus={() => {
               setActiveField('yours')
             }}
             onClick={() => {
               setActiveField('yours')
+            }}
+            onChange={(event) => {
+              const formatted = formatDateInput(event.target.value)
+              setHerInput(formatted)
+              if (!lockedOut) setError(null)
+              const iso = inputToISODate(formatted)
+              setHerDate(iso ?? '')
             }}
             disabled={lockedOut}
           />

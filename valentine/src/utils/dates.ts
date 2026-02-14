@@ -32,6 +32,31 @@ export function formatISODate(value: string): string {
   return `${month}/${day}/${year}`
 }
 
+export function inputToISODate(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return parseISODate(trimmed) ? trimmed : null
+  }
+
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
+    const [month, day, year] = trimmed.split('/').map(Number)
+    if (!month || !day || !year) return null
+    const date = new Date(year, month - 1, day)
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null
+    }
+    return toISODate(date)
+  }
+
+  return null
+}
+
 export function isSameISO(a?: string | null, b?: string | null): boolean {
   if (!a || !b) return false
   return a === b

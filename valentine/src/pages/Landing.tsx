@@ -19,7 +19,7 @@ export default function Landing({ onUnlocked }: LandingProps) {
       </div>
 
       <div className="card">
-        <h1>From me to you (:</h1>
+        <h1>Our Birthdays</h1>
         <p className="subtitle">Enter our birthdays to unlock.</p>
         <DateGate onSuccess={onUnlocked} />
       </div>
